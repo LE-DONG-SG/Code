@@ -40,6 +40,7 @@ if fs < 2 * f:
     f_mod = f % fs  # 取模
     f_alias = fs - f_mod if f_mod > fs / 2 else f_mod  # 折叠为最小正频率
     x_alias = np.sin(2 * np.pi * f_alias * t)
+    x_alias = -np.sin(2 * np.pi * f_alias * t) if f_mod > fs / 2 else np.sin(2 * np.pi * f_alias * t)
     ax.plot(t, x_alias, '--', color='blue', label="Aliased Signal")
     st.warning("⚠发生混叠 (Aliasing Occurred)")
 else:
