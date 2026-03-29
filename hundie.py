@@ -68,9 +68,9 @@ with tab_alias:
             if np.max(np.abs(xs)) < 1e-6:
                 x_alias = np.zeros_like(t)
             ax.plot(t, x_alias, '--', color='blue', label="Aliased Signal")
-            st.warning("⚠ 发生混叠 (Aliasing Occurred)")
+            st.warning("⚠ Aliasing Occurred")
         else:
-            st.success("✅ 满足采样定理 (Satisfy Nyquist Theorem)")
+            st.success("✅ Satisfy Nyquist Theorem")
 
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Amplitude")
@@ -110,29 +110,29 @@ with tab_alias:
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 
         # 子图1：未滤波 - 直接采样
-        ax1.plot(t, x_mix, color="red", label="混合信号(含高频干扰)")
-        ax1.scatter(ts, xs_mix, color="green", label="采样点")
-        ax1.set_title("未使用抗混叠滤波器（易发生混叠）")
+        ax1.plot(t, x_mix, color="red", label="Mixed Signal (with HF Noise)")
+        ax1.scatter(ts, xs_mix, color="green", label="Sampling Points")
+        ax1.set_title("Without Anti-aliasing Filter (Prone to Aliasing)")
         ax1.set_ylabel("Amplitude")
         ax1.grid(True)
-        ax1.legend()
+        ax1.legend(loc="upper right")  # 右上角图例
 
         # 子图2：滤波后 - 采样
-        ax2.plot(t, x_filtered, color="blue", label="滤波后信号(无高频干扰)")
-        ax2.scatter(ts, xs_filtered, color="green", label="采样点")
-        ax2.set_title("使用抗混叠滤波器（消除混叠）")
+        ax2.plot(t, x_filtered, color="blue", label="Filtered Signal (No HF Noise)")
+        ax2.scatter(ts, xs_filtered, color="green", label="Sampling Points")
+        ax2.set_title("With Anti-aliasing Filter (Eliminate Aliasing)")
         ax2.set_xlabel("Time (s)")
         ax2.set_ylabel("Amplitude")
         ax2.grid(True)
-        ax2.legend()
+        ax2.legend(loc="upper right")  # 统一右上角（核心修改）
 
         st.pyplot(fig)
 
         # 效果说明
         if f_noise > fs / 2:
-            st.success("✅ 抗混叠滤波器已滤除高频干扰，避免混叠！")
+            st.success("✅ Anti-aliasing filter removed HF noise, avoided aliasing!")
         else:
-            st.info("ℹ️ 干扰频率低于奈奎斯特频率，无明显混叠")
+            st.info("ℹ️ Noise frequency is below Nyquist frequency, no obvious aliasing")
 
         # ===================== 选项卡2：预留模块 =====================
 with tab_other:
