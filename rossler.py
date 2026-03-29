@@ -61,20 +61,20 @@ if st.session_state.running:
                 if not st.session_state.running:
                     break
 
-                # 绘图
-                xs = [p[0] for p in hist]
-                ys = [p[1] for p in hist]
+        # 绘图
+        xs = [p[0] for p in hist]
+        ys = [p[1] for p in hist]
 
-                fig, ax = plt.subplots(figsize=(8, 7))
-                ax.set_facecolor("black")
-                ax.plot(xs, ys, color="#00ffff", linewidth=0.6)
-                ax.axis("off")
-                placeholder.pyplot(fig)
-                plt.close(fig)
+        fig, ax = plt.subplots(figsize=(8, 7))
+        ax.set_facecolor("black")
+        ax.plot(xs, ys, color="#00ffff", linewidth=0.6)
+        ax.axis("off")
+        placeholder.pyplot(fig)
+        plt.close(fig)
 
-                # 保存状态
-                st.session_state.state = (x, y, z)
-                st.session_state.history = hist
+        # 保存状态
+        st.session_state.state = (x, y, z)
+        st.session_state.history = hist
 
         st.session_state.running = False
         st.success("Done！")
