@@ -66,8 +66,7 @@ with tab_alias:
             x_alias = -np.sin(2 * np.pi * f_alias * t) if f_mod > fs / 2 else x_alias
             if np.max(np.abs(xs)) < 1e-6:
                 x_alias = np.zeros_like(t)
-            else:
-                ax.plot(t, x_alias, '--', color='blue', label="Aliased Signal")
+            ax.plot(t, x_alias, '--', color='blue', label="Aliased Signal")
             st.warning("⚠ 发生混叠 (Aliasing Occurred)")
         else:
             st.success("✅ 满足采样定理 (Satisfy Nyquist Theorem)")
