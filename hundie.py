@@ -5,6 +5,10 @@ import streamlit as st
 # ====== Streamlit 页面配置 ======
 st.set_page_config(page_title="信号与系统教学演示", layout="wide")
 
+# ====== 中文字体修复 ======
+plt.rcParams["axes.unicode_minus"] = False
+plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
+
 # 缩小标题与分割线行距的 CSS
 st.markdown("""
 <style>
@@ -33,9 +37,6 @@ with tab_alias:
     # ===================== 子选项卡1：采样混叠演示（原代码） =====================
     with sub_tab1:
         st.subheader("采样混叠演示 (Nyquist Theorem)")
-        # ====== 中文字体修复 ======
-        plt.rcParams["axes.unicode_minus"] = False
-        plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
 
         # ====== 交互滑块 ======
         col1, col2 = st.columns(2)
