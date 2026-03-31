@@ -18,7 +18,7 @@ st.sidebar.header("Parameter settings")
 a = st.sidebar.slider("a", 0.0, 1.0, 0.2, 0.01)
 b = st.sidebar.slider("b", 0.0, 1.0, 0.2, 0.01)
 c = st.sidebar.slider("c", 0.0, 10.0, 5.7, 0.1)
-dt_display = st.sidebar.slider("step length (milli)", 1, 10, 1, 1)
+dt_display = st.sidebar.slider("step length (milli)", 0.1, 1, 0.5, 0.1)
 max_steps_display = st.sidebar.slider("minimum steps (million)", 1, 10, 1, 1)
 
 #重定义
