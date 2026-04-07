@@ -107,18 +107,22 @@ with tab2:
                 lyap = np.mean(np.abs(np.log(np.abs(np.diff(xs) + 1e-9))))
                 lyap = round(lyap, 4)
 
-                # 非混沌 / NaN 时显示为 -
+                # 非混沌 / NaN → 显示 -
                 if np.isnan(lyap) or lyap <= 0.01:
                     lyap_display = "-"
-                    is_chaotic = "❌ Not Chaotic"
+                    chaos_state = "Not Chaotic"
+                    chaos_color = "#ff4444"
                 else:
                     lyap_display = f"{lyap}"
-                    is_chaotic = "✅ Chaotic"
+                    chaos_state = "Chaotic"
+                    chaos_color = "#00C000"
 
+                # ==================== 正常字号显示（修复完成） ====================
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.metric("Chaos Index", lyap_display)
+                    st.markdown(f"**Max Lyapunov Exponent:** {lyap_display}")
                 with col2:
-                    st.metric("Chaos State", is_chaotic)
+                    st.markdown(f"**Chaos State:** <span style='color:{chaos_color}'>{chaos_state}</span>",
+                                unsafe_allow_html=True)
 
             st.success("Complexity analysis completed!")
