@@ -118,9 +118,48 @@ with tab2:
         return K
 
     # --------------- FIX: 正确李雅普诺夫指数 ----------------
-    def correct_lyapunov(xs, dt=0.0005, steps=5000):
-        le = np.mean(np.log(np.abs(np.diff(xs)+1e-9)))
-        return le / dt
+    def correct_lyapunov(x_traj, y_traj, z_traj, dt, a=0.2, b=0.2, c=5.7):
+        n = len(x_traj)
+        log_divergence = []
+        dx0 = 1e-6
+        # 初始扰动
+        x1 = x_traj.copy()
+        y1 = y_traj.copy()
+        z1 = z_traj.copy()
+        x2 = x1 + dx0
+        y2 = y1
+        z2 = z1
+
+        for i in range(n - 1):
+            # 演化轨道1
+            k1x = -y1[i] - z1[i]
+            k1y = x1[i] + a * y1[i]
+            k1z = b + z1[i] * (x1[i] - c)
+            x1[i + 1] = x1[i] + dt * k1x
+            y1[i + 1] = y1[i] + dt * k1y
+            z1[i + 1] = z1[i] + dt * k1z
+
+            # 演化轨道2
+            k2x = -y2[i] - z2[i]
+            k2y = x2[i] + a * y2[i]
+            k2z = b + z2[i] * (x2[i] - c)
+            x2[i + 1] = x2[i] + dt * k2x
+            y2[i + 1] = y2[i] + dt * k2y
+            z2[i + 1] = z2[i] + dt * k2z
+
+            # 距离
+            d = np.sqrt((x2[i + 1] - x1[i + 1]) ** 2 + (y2[i + 1] - y1[i + 1]) ** 2 + (z2[i + 1] - z1[i + 1]) ** 2)
+            if d < 1e-12:
+                d = 1e-12
+            # 归一化
+            x2[i + 1] = x1[i + 1] + dx0 * (x2[i + 1] - x1[i + 1]) / d
+            y2[i + 1] = y1[i + 1] + dx0 * (y2[i + 1] - y1[i + 1]) / d
+            z2[i + 1] = z1[i + 1] + dx0 * (z2[i + 1] - z1[i + 1]) / d
+
+            log_divergence.append(np.log(d / dx0))
+
+        lyap = np.mean(log_divergence) / dt
+        return lyap
 
     if st.button("Compute Complexity Indicators", key="compute"):
         hist = st.session_state.history
