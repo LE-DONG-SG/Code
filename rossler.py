@@ -153,13 +153,13 @@ with tab2:
     b = st.sidebar.slider("b", 0.0, 1.0, 0.20, 0.01)
     c = st.sidebar.slider("c", 0.0, 15.0, 5.70, 0.1)
     dt_display = st.sidebar.slider("Step Size (ms)", 0.05, 1.0, 0.10, 0.05)
-    max_steps = st.sidebar.slider("Total Steps (k)", 1000, 5000, 2000, 500) * 1000
+    max_steps = st.sidebar.slider("Total Steps (k)", 1000, 5000, 3000, 500) * 1000
 
     dt = dt_display / 1000
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Start Simulation"):
+        if st.button("Start"):
             st.session_state.running = True
             st.session_state.history = []
             st.session_state.state = (0.1, 0.1, 0.1)
@@ -174,7 +174,7 @@ with tab2:
         hist = st.session_state.history
         av, bv, cv = a, b, c
 
-        with st.spinner("Running RK4 integration..."):
+        with st.spinner("Generating High-Quality Attractor..."):
             for step in range(max_steps):
                 dx = -y - z
                 dy = x + av * y
@@ -205,7 +205,8 @@ with tab2:
                 y += dt * (dy + 2*dy1 + 2*dy2 + dy3) / 6
                 z += dt * (dz + 2*dz1 + 2*dz2 + dz3) / 6
 
-                if step > max_steps * 0.8:
+                # 优化数据截断：保留更多有效轨迹，图像更完整
+                if step > max_steps * 0.7:
                     hist.append((x, y))
 
                 if not st.session_state.running:
@@ -214,17 +215,29 @@ with tab2:
         xs = [p[0] for p in hist]
         ys = [p[1] for p in hist]
 
-        fig, ax = plt.subplots(figsize=(8, 7))
-        ax.set_facecolor("black")
-        ax.plot(xs, ys, color='cyan', linewidth=0.4)
-        ax.axis("off")
-        placeholder.pyplot(fig)
+        # ====================== 核心优化：高清专业绘图 ======================
+        plt.style.use('default')
+        fig, ax = plt.subplots(figsize=(9, 8), dpi=100)  # 高清分辨率
+        ax.set_facecolor("#101010")                      # 纯黑背景
+        # 渐变青蓝色线条，粗细适中，连续流畅
+        ax.plot(xs, ys, color='#00ffcc', linewidth=0.6, alpha=0.85)
+        # 去除所有边框、刻度，极致美观
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        # 紧凑布局，无空白边距
+        plt.tight_layout(pad=0)
+        # 渲染图像
+        placeholder.pyplot(fig, bbox_inches='tight', pad_inches=0)
         plt.close()
 
         st.session_state.final_xs = np.array(xs)
         st.session_state.history = hist
         st.session_state.running = False
-        st.success("✅ Attractor generated successfully.")
+        st.success("✅ High-Quality Rossler Attractor Generated!")
 
 # ==============================================================================
 # Tab 3: Complexity Analysis
