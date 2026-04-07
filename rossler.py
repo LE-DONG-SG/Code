@@ -87,8 +87,8 @@ with tab2:
     st.subheader("Chaos Complexity Analysis")
 
     st.markdown("""
-    这里可以展示：
-    - 最大李雅普诺夫指数 Lyapunov Exponent
+    Here you could check：
+    - Max Lyapunov Exponent
     - 分形维数 / 关联维数
     - 功率谱
     - 相空间重构
@@ -107,12 +107,18 @@ with tab2:
                 lyap = np.mean(np.abs(np.log(np.abs(np.diff(xs) + 1e-9))))
                 lyap = round(lyap, 4)
 
-                is_chaotic = lyap > 0.01
+                # 非混沌 / NaN 时显示为 -
+                if np.isnan(lyap) or lyap <= 0.01:
+                    lyap_display = "-"
+                    is_chaotic = "❌ Not Chaotic"
+                else:
+                    lyap_display = f"{lyap}"
+                    is_chaotic = "✅ Chaotic"
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.metric("Max Lyapunov Exponent", lyap)
+                    st.metric("Chaos Index", lyap_display)
                 with col2:
-                    st.metric("Is Chaotic", "✅ Yes" if is_chaotic else "❌ No")
+                    st.metric("Chaos State", is_chaotic)
 
             st.success("Complexity analysis completed!")
