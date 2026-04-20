@@ -19,13 +19,13 @@ if "final_xs" not in st.session_state:
 
 # -------------------------- UI Tabs --------------------------
 tab1, tab2, tab3 = st.tabs([
-    "📚 Theory & Background",
-    "🎬 Attractor Simulation",
-    "📊 Complexity Analysis"
+    "Theory & Background",
+    "Attractor Simulation",
+    "Complexity Analysis"
 ])
 
 # ==============================================================================
-# Tab 1: Full English Theoretical Background + New Lorenz Comparison Section
+# Tab 1: Theoretical Background
 # ==============================================================================
 with tab1:
     st.header("1. Rossler Attractor: Complete Theory")
@@ -143,7 +143,6 @@ The Lyapunov exponent in this code is a **1D approximation** for practical use.
 The **0–1 test** is the primary and most reliable judgment.
 """)
 
-    # ==================== 新增：全英文罗斯勒-洛伦兹对比 + 学术意义 ====================
     st.divider()
     st.subheader("1.6 Comparison with Lorenz Attractor & Scientific Significance")
     st.markdown("""
@@ -165,7 +164,7 @@ The Rössler attractor is a streamlined, simplified chaotic system developed on 
 """)
 
 # ==============================================================================
-# Tab 2: Rossler Attractor Simulation | 纯白底色 + 你原图一模一样极简欧拉迭代
+# Tab 2: Rossler Attractor Simulation
 # ==============================================================================
 with tab2:
     st.header("2. Rossler Attractor Simulation")
@@ -174,10 +173,12 @@ with tab2:
     a = st.sidebar.slider("a", 0.0, 1.0, 0.20, 0.01)
     b = st.sidebar.slider("b", 0.0, 1.0, 0.20, 0.01)
     c = st.sidebar.slider("c", 0.0, 15.0, 5.70, 0.1)
+    # Precision t: 1-10, default 1 (Required modification)
+    t_precision = st.sidebar.slider("Precision t", 1, 10, 1)
     dt_display = st.sidebar.slider("Step Size (ms)", 0.05, 1.0, 0.10, 0.05)
     max_steps = st.sidebar.slider("Total Steps (k)", 1000, 5000, 3000, 500) * 1000
 
-    dt = dt_display / 1000
+    dt = dt_display / 1000 / t_precision
 
     col1, col2 = st.columns(2)
     with col1:
@@ -195,8 +196,7 @@ with tab2:
         x, y, z = st.session_state.state
         hist = st.session_state.history
 
-        # 100% 复刻你截图里的极简欧拉迭代写法，一字不差
-        with st.spinner("Drawing...you may click 'stop'"):
+        with st.spinner("Calculating...you may click 'stop'"):
             for step in range(max_steps):
                 # Rossler chaotic differential equations
                 dx = -y - z
@@ -219,12 +219,10 @@ with tab2:
         xs = [p[0] for p in hist]
         ys = [p[1] for p in hist]
 
-        # ====================== 强制纯白画布背景 ======================
+        # White background canvas
         plt.style.use('default')
         fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
-        # 彻底改为纯白色背景，不再是黑色
         ax.set_facecolor("#FFFFFF")
-        # 白底深色线条，混沌螺旋结构清晰醒目
         ax.plot(xs, ys, color='#0044aa', linewidth=0.6, alpha=0.95)
 
         ax.set_xticks([])
@@ -238,14 +236,13 @@ with tab2:
         st.session_state.final_xs = np.array(xs)
         st.session_state.history = hist
         st.session_state.running = False
-        st.success("✅ High-Quality Rossler Attractor Generated Successfully!")
+        st.success("Rossler Attractor Generated Successfully!")
 
 # ==============================================================================
-# Tab 3: Chaotic Indicators Analysis | 所有分析图表同步纯白底色
+# Tab 3: Chaotic Indicators Analysis (Strictly match Tab1 theory)
 # ==============================================================================
 with tab3:
     st.header("3. Chaotic Indicators Analysis")
-
 
     def robust_01_test(series, trials=3):
         """
@@ -280,9 +277,8 @@ with tab3:
         if not Ks:
             return 0.0, "Analysis Error"
         avg_k = np.mean(Ks)
-        verdict = "✅ Chaotic" if avg_k > 0.5 else "❌ Non-Chaotic"
+        verdict = "Chaotic" if avg_k > 0.5 else "Non-Chaotic"
         return round(avg_k, 4), verdict
-
 
     def phase_recon(seq, tau=5):
         """Phase space reconstruction based on Takens embedding theorem"""
@@ -291,41 +287,43 @@ with tab3:
             return []
         return np.array([[seq[i], seq[i + tau]] for i in range(n - tau)])
 
-
     if st.button("Compute Chaotic Indicators"):
         xs = st.session_state.final_xs
         if len(xs) < 5000:
-            st.warning("⚠️ Please run the attractor simulation first to generate sufficient data.")
+            st.warning("Please run the attractor simulation first to generate sufficient data.")
         else:
             with st.spinner("Performing Chaos Analysis..."):
-                K, res = robust_01_test(xs)
+                K, k_verdict = robust_01_test(xs)
 
-                # Calculate approximate Maximum Lyapunov Exponent
+                # Calculate Maximum Lyapunov Exponent (Strictly follow Tab1 standard)
                 try:
                     d = np.abs(np.diff(xs))
                     d = d[d > 1e-9]
                     lyap = np.mean(np.log(d)) / dt if len(d) > 100 else -999
-                    lyap_str = f"{lyap:.4f}" if lyap > 0 else "-"
+                    lyap_str = f"{lyap:.4f}"
+                    lyap_verdict = "Chaotic" if lyap > 0 else "Periodic/Stable"
                 except:
                     lyap_str = "-"
+                    lyap_verdict = "Calculation Failed"
 
                 f, Pxx = welch(xs, fs=10000, nperseg=2048)
                 tau = 5 if K > 0.5 else 1
                 psr = phase_recon(xs, tau=tau)
 
-            st.subheader("Quantitative Results")
+            st.subheader("Quantitative Results (Strictly Match Theory)")
             c1, c2 = st.columns(2)
-            c1.metric("Maximum Lyapunov Exponent", lyap_str)
+            c1.metric("Maximum Lyapunov Exponent (λ)", lyap_str)
             c2.metric("0-1 Test K Value", K)
 
+            # Strictly align with Tab1 judgment criteria
             c3, c4 = st.columns(2)
-            c3.markdown(f"**Chaos State**: {res}")
-            c4.markdown(f"**0-1 Test Verdict**: {res}")
+            c3.markdown(f"**Lyapunov Verdict**: {lyap_verdict} (λ>0=Chaotic)")
+            c4.markdown(f"**0-1 Test Verdict**: {k_verdict} (K→1=Chaotic)")
 
             st.subheader("Power Spectrum & Reconstructed Phase Space")
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5), dpi=120)
 
-            # 分析图表同步纯白色背景
+            # White background for analysis charts
             ax1.set_facecolor("#FFFFFF")
             ax1.plot(f, Pxx, color='#0055dd', linewidth=1.2)
             ax1.set_title("Power Spectrum (Log Scale)", fontweight='bold')
@@ -342,7 +340,7 @@ with tab3:
 
             st.pyplot(fig)
             plt.close()
-            st.success("✅ Chaos Complexity Analysis Completed!")
+            st.success("Chaos Complexity Analysis Completed!")
 
 st.markdown("---")
 st.caption("Rossler Attractor | Chaos Theory | Euler Integrator | Streamlit Academic Visualization Tool")
