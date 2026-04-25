@@ -12,12 +12,18 @@ plt.rcParams["axes.unicode_minus"] = False  # 修复负号显示
 import streamlit as st
 
 # 全局设置中文字体
+# 全局设置中文字体（包含表格、数据框全组件）
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
 
-    html, body, [class*="css"]  {
-        font-family: 'Noto Sans SC', sans-serif;
+    /* 全局字体 + 表格全场景字体统一 */
+    html, body, [class*="css"], 
+    table, th, td,           /* 原生表格 */
+    .stTable, .stDataFrame   /* Streamlit表格/数据框 */
+    {
+        font-family: 'Noto Sans SC', sans-serif !important;
+        font-size: 14px;     /* 可调整表格字体大小 */
     }
 </style>
 """, unsafe_allow_html=True)
