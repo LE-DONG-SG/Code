@@ -6,8 +6,9 @@ import streamlit as st
 st.set_page_config(page_title="信号与系统教学演示", layout="wide")
 
 # ====== 核心修复：全平台中文支持（解决Streamlit中文乱码）======
-plt.rcParams['font.sans-serif'] = ["WenQuanYi Zen Hei", "SimHei", "Microsoft YaHei", "Arial Unicode MS"]
-plt.rcParams["axes.unicode_minus"] = False  # 修复负号显示
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'PingFang SC', 'WenQuanYi Zen Hei']
+plt.rcParams["axes.unicode_minus"] = False  # 解决负号方框
+plt.rcParams['font.family'] = 'sans-serif'
 
 import streamlit as st
 
