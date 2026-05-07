@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 
-# ====== Streamlit Page Configuration (English, No Chinese Fonts) ======
+# Streamlit Page Configuration
 st.set_page_config(page_title="Signals & Systems Demo", layout="wide")
 plt.rcParams["axes.unicode_minus"] = False
 
-# ===================== Main Page =====================
+# Main Page
 st.title("📚 Signals & Systems Teaching Demonstration")
 tab_alias, tab_other = st.tabs(["🔧 Sampling Alias Simulator", "📌 Other Modules (Reserved)"])
 
@@ -16,7 +16,7 @@ with tab_alias:
     sub_tab1, sub_tab2 = st.tabs(["📊 Sampling Aliasing Demo", "🛡 Anti-Aliasing Filter Demo"])
 
     with sub_tab1:
-        # 新增：信号选择下拉框
+        # Signal type selector
         st.subheader("Signal Sampling & Aliasing")
         select_signal = st.selectbox(
             "Please choose signal type",
@@ -25,22 +25,22 @@ with tab_alias:
         )
         st.divider()
 
-        # ===================== 1. 正弦波 原版完整逻辑 原样不动 =====================
+        # Sine Wave Module
         if select_signal == "Sine Wave":
-            st.subheader("1. Sine Wave Sampling & Aliasing")
+            st.subheader("Sine Wave Sampling & Aliasing")
             col1, col2 = st.columns(2)
             with col1:
                 f = st.slider(r"Signal Frequency $f\ (\rm Hz)$", 1, 50, 15, key="f_signal")
             with col2:
                 fs = st.slider(r"Sampling Frequency $f_{\rm s}\ (\rm Hz)$", 1, 50, 45, key="fs_sample")
 
-            # Time Domain Signal
+            # Time domain signal generation
             t = np.linspace(0, 1, 1000)
             x = np.sin(2 * np.pi * f * t)
             ts = np.arange(0, 1, 1 / fs)
             xs = np.sin(2 * np.pi * f * ts)
 
-            # Figure 1: Time Domain Waveform
+            # Time domain waveform plot
             fig1, ax1 = plt.subplots(figsize=(10, 5))
             ax1.plot(t, x, label="Original Sine Signal", color="red")
             ax1.vlines(ts, 0, xs, colors='green')
@@ -60,11 +60,11 @@ with tab_alias:
             ax1.set_title("Time Domain Signal Waveform (Sine)")
             ax1.set_xlabel("Time (s)")
             ax1.set_ylabel("Amplitude")
-            ax1.legend()
+            ax1.legend(loc="upper right")
             ax1.grid(True)
             st.pyplot(fig1)
 
-            # FFT Function
+            # FFT calculate function
             def fft_signal(sig, t):
                 N = len(sig)
                 dt = t[1] - t[0]
@@ -72,7 +72,7 @@ with tab_alias:
                 spectrum = np.abs(np.fft.fft(sig)) / N
                 return np.fft.fftshift(freq), np.fft.fftshift(spectrum)
 
-            # Original Signal Spectrum
+            # Original signal spectrum
             freq_x, X = fft_signal(x, t)
             x_sampled = np.zeros_like(t)
             indices = (ts / (t[1] - t[0])).astype(int)
@@ -80,25 +80,25 @@ with tab_alias:
             x_sampled[indices] = xs[:len(indices)]
             freq_s, Xs = fft_signal(x_sampled, t)
 
-            # Figure 2: Original Signal Spectrum
+            # Original spectrum figure
             fig2, ax2 = plt.subplots(figsize=(10, 5))
             ax2.plot(freq_x, X, label="Original Signal Spectrum", color='red')
             ax2.set_xlim(-60, 60)
             ax2.set_title("Original Signal Spectrum (Sine)")
             ax2.set_xlabel("Frequency (Hz)")
             ax2.set_ylabel("Magnitude")
-            ax2.legend()
+            ax2.legend(loc="upper right")
             ax2.grid(True)
             st.pyplot(fig2)
 
-            # Figure 3: Sampled Signal Spectrum
+            # Sampled signal spectrum figure
             fig3, ax3 = plt.subplots(figsize=(10, 5))
             ax3.plot(freq_s, Xs, label="Sampled Signal Spectrum", color='blue')
             ax3.set_xlim(-60, 60)
             ymax = np.max(Xs)
             ax3.set_ylim(0, ymax * 1.2)
 
-            # Aliasing Region
+            # Mark aliasing region
             if fs < 2 * f:
                 f_overlap_start = fs - f
                 f_overlap_end = f
@@ -106,7 +106,7 @@ with tab_alias:
                     ax3.fill_betweenx([0, ymax], f_overlap_start, f_overlap_end, color='blue', alpha=0.2, label="Aliasing Region")
                     ax3.fill_betweenx([0, ymax], -f_overlap_end, -f_overlap_start, color='blue', alpha=0.2)
 
-            # Dashed Frequency Lines
+            # Vertical dashed frequency line
             def vline(x):
                 ax3.plot([x, x], [0, ymax], linestyle='--', linewidth=1, color='black')
 
@@ -122,16 +122,16 @@ with tab_alias:
             ax3.grid(True)
             st.pyplot(fig3)
 
-        # ===================== 2. Sinc信号 原版完整逻辑 原样不动 =====================
+        # Sinc Signal Module
         else:
-            st.subheader("2. Sinc Signal Sampling & Aliasing")
+            st.subheader("Sinc Signal Sampling & Aliasing")
             col_s1, col_s2 = st.columns(2)
             with col_s1:
                 f_sinc = st.slider(r"Sinc Signal Frequency $f\ (\rm Hz)$", 1, 50, 15, key="f_sinc")
             with col_s2:
                 fs_sinc = st.slider(r"Sinc Sampling Frequency $f_{\rm s}\ (\rm Hz)$", 1, 50, 25, key="fs_sinc")
 
-            # Sinc Function
+            # Sinc function definition
             def sinc_signal(t, f0):
                 y = np.zeros_like(t)
                 nonzero = t != 0
@@ -139,13 +139,13 @@ with tab_alias:
                 y[~nonzero] = 2 * f0
                 return y
 
-            # Symmetric time axis for sinc
+            # Symmetric time axis for sinc signal
             t_sinc = np.linspace(-0.5, 0.5, 3000)
             ts_sinc = np.arange(-0.5, 0.5, 1 / fs_sinc)
             x_sinc = sinc_signal(t_sinc, f_sinc)
             xs_sinc = sinc_signal(ts_sinc, f_sinc)
 
-            # Time Domain Plot for Sinc
+            # Time domain plot for sinc
             fig_s1, ax_s1 = plt.subplots(figsize=(10, 5))
             ax_s1.plot(t_sinc, x_sinc, label="Original Sinc Signal", lw=1, color="red")
             ax_s1.vlines(ts_sinc, 0, xs_sinc, lw=1, colors='green')
@@ -165,11 +165,11 @@ with tab_alias:
             ax_s1.set_title("Time Domain Sinc Signal Waveform")
             ax_s1.set_xlabel("Time (s)")
             ax_s1.set_ylabel("Amplitude")
-            ax_s1.legend()
+            ax_s1.legend(loc="upper right")
             ax_s1.grid(True)
             st.pyplot(fig_s1)
 
-            # FFT Function
+            # FFT calculate function
             def fft_signal(sig, t):
                 N = len(sig)
                 dt = t[1] - t[0]
@@ -177,7 +177,7 @@ with tab_alias:
                 spectrum = np.abs(np.fft.fft(sig)) / N
                 return np.fft.fftshift(freq), np.fft.fftshift(spectrum)
 
-            # Sinc Spectrum
+            # Sinc signal spectrum calculation
             freq_x_sinc, X_sinc = fft_signal(x_sinc, t_sinc)
             x_sampled_sinc = np.zeros_like(t_sinc)
             idx_sinc = (ts_sinc / (t_sinc[1] - t_sinc[0])).astype(int)
@@ -185,18 +185,18 @@ with tab_alias:
             x_sampled_sinc[idx_sinc] = xs_sinc[:len(idx_sinc)]
             freq_s_sinc, Xs_sinc = fft_signal(x_sampled_sinc, t_sinc)
 
-            # Sinc Original Spectrum
+            # Original sinc spectrum plot
             fig_s2, ax_s2 = plt.subplots(figsize=(10, 5))
             ax_s2.plot(freq_x_sinc, X_sinc, label="Original Sinc Spectrum", color='red')
             ax_s2.set_xlim(-60, 60)
             ax_s2.set_title("Original Sinc Signal Spectrum")
             ax_s2.set_xlabel("Frequency (Hz)")
             ax_s2.set_ylabel("Magnitude")
-            ax_s2.legend()
+            ax_s2.legend(loc="upper right")
             ax_s2.grid(True)
             st.pyplot(fig_s2)
 
-            # Sinc Sampled Spectrum
+            # Sampled sinc spectrum plot
             fig_s3, ax_s3 = plt.subplots(figsize=(10, 5))
             ax_s3.plot(freq_s_sinc, Xs_sinc, label="Sampled Sinc Spectrum", color='blue')
             ax_s3.set_xlim(-60, 60)
@@ -210,7 +210,8 @@ with tab_alias:
                     ax_s3.fill_betweenx([0, ymax_sinc], f_start, f_end, color='blue', alpha=0.2, label="Aliasing Region")
                     ax_s3.fill_betweenx([0, ymax_sinc], -f_end, -f_start, color='blue', alpha=0.2)
 
-            def vline_sinc(x, label=None):
+            # Vertical dashed line for sinc spectrum
+            def vline_sinc(x):
                 ax_s3.plot([x, x], [0, ymax_sinc], linestyle='--', linewidth=1, color='black')
 
             vline_sinc(f_sinc)
@@ -225,7 +226,6 @@ with tab_alias:
             ax_s3.grid(True)
             st.pyplot(fig_s3)
 
-    # 下面抗混叠滤波模块完全不动
     with sub_tab2:
         st.subheader("Anti-Aliasing Filter Demonstration")
         st.markdown("**Principle**: Filter out high-frequency components before sampling to avoid aliasing fundamentally.")
@@ -240,7 +240,7 @@ with tab_alias:
 
         fc = st.slider("Filter Cut-off Frequency (Hz)", 25, 40, 30, key="fc")
 
-        # Generate Signals
+        # Generate mixed signal and filtered signal
         t = np.linspace(0, 1, 1000)
         x_mix = np.sin(2 * np.pi * f_main * t) + 0.3 * np.sin(2 * np.pi * f_noise * t)
         x_filtered = np.sin(2 * np.pi * f_main * t)
@@ -249,13 +249,13 @@ with tab_alias:
         xs_mix = np.sin(2 * np.pi * f_main * ts) + 0.3 * np.sin(2 * np.pi * f_noise * ts)
         xs_filtered = np.sin(2 * np.pi * f_main * ts)
 
-        # Figure 4: Anti-Aliasing Filter Comparison
+        # Anti-aliasing filter comparison plot
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
         ax1.plot(t, x_mix, color="red", label="Mixed Signal (with High-Frequency Noise)")
         ax1.scatter(ts, xs_mix, color="green", label="Sampling Points")
         ax1.set_title("Without Anti-Aliasing Filter (Prone to Aliasing)")
         ax1.set_ylabel("Amplitude")
-        ax1.legend()
+        ax1.legend(loc="upper right")
         ax1.grid(True)
 
         ax2.plot(t, x_filtered, color="blue", label="Filtered Signal (No High-Frequency Noise)")
@@ -263,12 +263,12 @@ with tab_alias:
         ax2.set_title("With Anti-Aliasing Filter (Eliminate Aliasing)")
         ax2.set_xlabel("Time (s)")
         ax2.set_ylabel("Amplitude")
-        ax2.legend()
+        ax2.legend(loc="upper right")
         ax2.grid(True)
 
         st.pyplot(fig)
 
-        # Prompt Messages
+        # Tip message
         if f_noise > fs / 2:
             st.success("✅ Anti-aliasing filter removed high-frequency noise, completely avoiding aliasing!")
         else:
