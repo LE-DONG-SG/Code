@@ -19,10 +19,10 @@ with tab_alias:
         # ==============================================
         # 新增：信号类型选择下拉框（二选一展示）
         # ==============================================
-        st.subheader("1. Signal Sampling & Aliasing")
+        st.subheader("Signal Sampling & Aliasing")
         signal_type = st.selectbox(
             "Select Signal Type",
-            options=["Sine Wave (正弦波)", "Sinc Signal (Sinc信号)"],
+            options=["Sine Wave", "Sinc Signal"],
             index=0,
             key="signal_selector"
         )
