@@ -28,7 +28,7 @@ with tab_alias:
         )
 
         # 根据选择的信号类型，生成对应参数、时间轴、信号
-        if signal_type == "Sine Wave (正弦波)":
+        if signal_type == "Sine Wave":
             # 正弦信号参数
             col1, col2 = st.columns(2)
             with col1:
