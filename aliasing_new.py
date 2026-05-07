@@ -20,7 +20,7 @@ with tab_alias:
         st.subheader("Signal Sampling & Aliasing")
         select_signal = st.selectbox(
             "Please choose signal type",
-            ["Sine Wave", "Sinc Signal"],
+            ["Sine Wave", "Sinc Signal", "Square Wave"],
             key="sig_select"
         )
         st.divider()
@@ -109,7 +109,6 @@ with tab_alias:
             # Vertical dashed frequency line
             def vline(x):
                 ax3.plot([x, x], [0, ymax], linestyle='--', linewidth=1, color='black')
-
             vline(f)
             vline(-f)
             vline(fs)
@@ -123,7 +122,7 @@ with tab_alias:
             st.pyplot(fig3)
 
         # Sinc Signal Module
-        else:
+        elif select_signal == "Sinc Signal":
             st.subheader("Sinc Signal Sampling & Aliasing")
             col_s1, col_s2 = st.columns(2)
             with col_s1:
@@ -213,7 +212,6 @@ with tab_alias:
             # Vertical dashed line for sinc spectrum
             def vline_sinc(x):
                 ax_s3.plot([x, x], [0, ymax_sinc], linestyle='--', linewidth=1, color='black')
-
             vline_sinc(f_sinc)
             vline_sinc(-f_sinc)
             vline_sinc(fs_sinc)
@@ -225,6 +223,117 @@ with tab_alias:
             ax_s3.legend(loc="upper right")
             ax_s3.grid(True)
             st.pyplot(fig_s3)
+
+        # Square Wave Module (New Added)
+        else:
+            st.subheader("Square Wave Sampling & Aliasing")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                f = st.slider(r"Signal Frequency $f\ (\rm Hz)$", 1, 50, 15, key="f_square")
+            with col2:
+                fs = st.slider(r"Sampling Frequency $f_{\rm s}\ (\rm Hz)$", 1, 50, 25, key="fs_square")
+            with col3:
+                duty = st.slider("Duty Cycle (%)", 5, 95, 50, key="duty_square")
+            D = duty / 100
+
+            # Square wave signal definition (Fourier series)
+            def square_signal(t, f, duty=0.5, harmonics=40):
+                y = np.zeros_like(t)
+                for k in range(1, harmonics + 1):
+                    ak = (2 / (k * np.pi)) * np.sin(k * np.pi * duty)
+                    y += ak * np.cos(2 * np.pi * k * f * t)
+                y += duty - 0.5
+                return y
+
+            # Time axis
+            t = np.linspace(-0.5, 0.5, 3000)
+            ts = np.arange(-0.5, 0.5, 1 / fs)
+            x = square_signal(t, f, D)
+            xs = square_signal(ts, f, D)
+
+            # Time domain waveform plot
+            fig1, ax1 = plt.subplots(figsize=(10, 5))
+            ax1.plot(t, x, label="Original Square Signal", lw=1, color="red")
+            ax1.vlines(ts, 0, xs, lw=1, colors='green')
+            ax1.scatter(ts, xs, color='green', s=10, label="Sampling Points")
+
+            # Aliasing calculation
+            if fs < 2 * f:
+                f_mod = f % fs
+                f_alias = fs - f_mod if f_mod > fs / 2 else f_mod
+                x_alias = square_signal(t, f_alias, D)
+                alias_sample = square_signal(ts, f_alias, D)
+                if len(alias_sample) > 1 and abs(alias_sample[1]) > 1e-8:
+                    sign = np.sign(xs[1] / alias_sample[1])
+                    x_alias *= sign
+                ax1.plot(t, x_alias, '--', lw=1, color='blue', label="Aliased Signal")
+                st.warning("⚠ Frequency Aliasing Occurred!")
+            else:
+                st.success("✅ Satisfies Nyquist Sampling Theorem!")
+
+            ax1.set_title(f"Time Domain Signal Waveform (Square, Duty {duty}%)")
+            ax1.set_xlabel("Time (s)")
+            ax1.set_ylabel("Amplitude")
+            ax1.legend(loc="upper right")
+            ax1.grid(True)
+            st.pyplot(fig1)
+
+            # FFT calculate function
+            def fft_signal(sig, t):
+                N = len(sig)
+                dt = t[1] - t[0]
+                freq = np.fft.fftfreq(N, dt)
+                spectrum = np.abs(np.fft.fft(sig)) / N
+                return np.fft.fftshift(freq), np.fft.fftshift(spectrum)
+
+            # Spectrum calculation
+            freq_x, X = fft_signal(x, t)
+            x_sampled = np.zeros_like(t)
+            indices = ((ts - t[0]) / (t[1] - t[0])).astype(int)
+            indices = indices[(indices >= 0) & (indices < len(t))]
+            x_sampled[indices] = xs[:len(indices)]
+            freq_s, Xs = fft_signal(x_sampled, t)
+
+            # Original spectrum figure
+            fig2, ax2 = plt.subplots(figsize=(10, 5))
+            ax2.plot(freq_x, X, label="Original Square Spectrum", color='red')
+            ax2.set_xlim(-60, 60)
+            ax2.set_title("Original Signal Spectrum (Square)")
+            ax2.set_xlabel("Frequency (Hz)")
+            ax2.set_ylabel("Magnitude")
+            ax2.legend(loc="upper right")
+            ax2.grid(True)
+            st.pyplot(fig2)
+
+            # Sampled signal spectrum figure
+            fig3, ax3 = plt.subplots(figsize=(10, 5))
+            ax3.plot(freq_s, Xs, label="Sampled Square Spectrum", color='blue')
+            ax3.set_xlim(-60, 60)
+            ymax = np.max(Xs)
+            ax3.set_ylim(0, ymax * 1.2)
+
+            # Mark aliasing region
+            if fs < 2 * f:
+                f_overlap_start = fs - f
+                f_overlap_end = f
+                if f_overlap_start < f_overlap_end:
+                    ax3.fill_betweenx([0, ymax], f_overlap_start, f_overlap_end, color='blue', alpha=0.2, label="Aliasing Region")
+                    ax3.fill_betweenx([0, ymax], -f_overlap_end, -f_overlap_start, color='blue', alpha=0.2)
+
+            # Vertical dashed frequency line
+            def vline(x):
+                ax3.plot([x, x], [0, ymax], linestyle='--', linewidth=1, color='black')
+            vline(f)
+            vline(-f)
+            vline(fs)
+            vline(-fs)
+
+            ax3.set_title("Sampled Square Signal Spectrum")
+            ax3.set_xlabel("Frequency (Hz)")
+            ax3.set_ylabel("Magnitude")
+            ax3.legend(loc="upper right")
+            ax3.grid(True)
+            st.pyplot(fig3)
 
     with sub_tab2:
         st.subheader("Anti-Aliasing Filter Demonstration")
